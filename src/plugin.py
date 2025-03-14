@@ -4,6 +4,7 @@ import json
 from Plugins.Plugin import PluginDescriptor
 from Screens.Console import Console
 
+
 def main(session, **kwargs):
 	try:
 		from Components.Renderer.Picon import piconLocator
@@ -24,8 +25,8 @@ def main(session, **kwargs):
 def Plugins(**kwargs):
 	return [
 		PluginDescriptor(
-			name='Picons Missing', 
-			description='Creates a list of missing picons in /tmp directory', 
-			where=PluginDescriptor.WHERE_PLUGINMENU, 
-			fnc=main, 
+			name='Picons Missing',
+			description='Creates a list of missing picons in /tmp directory',
+			where=PluginDescriptor.WHERE_PLUGINMENU,
+			fnc=main,
 			icon='plugin.png')]
