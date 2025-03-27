@@ -10,7 +10,7 @@ PKGV = "1.0+git${GITPKGV}"
 
 SRCREV = "${AUTOREV}"
 
-SRC_URI = "git://github.com/Huevos/PiconsMissing.git;protocol=https;branch=master"
+SRC_URI = "git://github.com/Belfagor2005/PiconsMissing.git;protocol=https;branch=master"
 
 
 
