@@ -33,7 +33,9 @@ def missingPicons():
 	# outlog3 = "impossible-picons"  # not used
 	outlog4 = "utf8-picon-names"
 	outlog5 = "utf8-picon-list"  # not CSV
+	outlog6 = "missing-utf8-picons"
 	logExt = ".csv"
+	logExtPlain = ".txt"
 	# piconOutFolder = "/picon/"  # not used
 	messages1 = []
 	# messages2 = {}  # not used
@@ -42,6 +44,7 @@ def missingPicons():
 	messages = []
 	messages4 = []
 	messages5 = []
+	messages6 = []
 	paths = []
 	pattern = "*.png"
 	serviceTypes = []
@@ -104,6 +107,10 @@ def missingPicons():
 				messages5.append((utf8_name_short, ocram_str))
 			else:
 				utf8_name = ""  # utf8 name is not valid so truncate it
+
+			if utf8_name and utf8_name not in paths:
+				messages6.append((name, sat, refstr, utf8_name))
+
 			if (name and newName2 and newPiconName in paths) or oldPiconName in paths or oldPiconName2 in paths or utf8_name and utf8_name in paths:
 				# found = True
 				if newName2 and newPiconName in paths:
@@ -145,42 +152,43 @@ def missingPicons():
 	# messages3 = sortByValue(messages3, 2)
 	"""
 	messages4.sort()
+	messages6 = sortByValue(messages6, 0)
 	messages = sortByValueRecursive(messages, sortOrder)
 	'''
-	# all = []
-	# for sat in messages.keys():
-		# tv = []
-		# other = []
-		# for item in messages[sat]:
-			# if item[4] in (1,4,5,17,22,25):
-				# tv.append(item)
-				# all.append(item)
-			# else:
-				# other.append(item)
-				# all.append(item)
-		# tv = sortByValue(tv, 0)
-		# other = sortByValue(other, 0)
-		# log = ''
-		# for ch in tv:
-			# log += '"%s","%s","%s"\n' % (ch[0],ch[1],ch[2])
-		# zf.writestr(outlog2 + '-' + satname(sat) + '-tv' + logExt, log)
-		# log = ''
-		# for ch in other:
-			# log += '"%s","%s","%s"\n' % (ch[0],ch[1],ch[2])
-		# zf.writestr(outlog2 + '-' + satname(sat) + '-other' + logExt, log)
-	# all = sortByValue(all, 0)
-	# for ch in all:
-		# log += '"%s","%s","%s","%s"\n' % (ch[0],ch[1],ch[2], satname(ch[3]))
-	# zf.writestr(outlog2 + '-all_services' + logExt, log)
+	all = []
+	for sat in messages.keys():
+		tv = []
+		other = []
+		for item in messages[sat]:
+			if item[4] in (1,4,5,17,22,25):
+				tv.append(item)
+				all.append(item)
+			else:
+				other.append(item)
+				all.append(item)
+		tv = sortByValue(tv, 0)
+		other = sortByValue(other, 0)
+		log = ''
+		for ch in tv:
+			log += '"%s","%s","%s"\n' % (ch[0],ch[1],ch[2])
+		zf.writestr(outlog2 + '-' + satname(sat) + '-tv' + logExt, log)
+		log = ''
+		for ch in other:
+			log += '"%s","%s","%s"\n' % (ch[0],ch[1],ch[2])
+		zf.writestr(outlog2 + '-' + satname(sat) + '-other' + logExt, log)
+	all = sortByValue(all, 0)
+	for ch in all:
+		log += '"%s","%s","%s","%s"\n' % (ch[0],ch[1],ch[2], satname(ch[3]))
+	zf.writestr(outlog2 + '-all_services' + logExt, log)
 
 	# start: removed by edit 1
-	# i = 0
-	# log = ''
-	# for message in messages:
-		# if i % 35 == 0:
-			# log += 'Channel name,SNP name,SRP name,Orbital,DVB type,Ocram database,Symlink\n'
-		# log += '"%s","%s","%s","%s",%i,%s,%s\n' % (message[0],message[1],message[2], satname(message[3]), message[4], message[5], message[6])
-		# i += 1
+	i = 0
+	log = ''
+	for message in messages:
+		if i % 35 == 0:
+			log += 'Channel name,SNP name,SRP name,Orbital,DVB type,Ocram database,Symlink\n'
+		log += '"%s","%s","%s","%s",%i,%s,%s\n' % (message[0],message[1],message[2], satname(message[3]), message[4], message[5], message[6])
+		i += 1
 	# end: removed by edit 1
 	'''
 
@@ -196,9 +204,9 @@ def missingPicons():
 			message[0], srp_name, utf8_name, snp_name, message[5], orbital, message[4], message[6], message[8]
 		))
 	zf.writestr(outlog2 + '-all_services' + logExt, "".join(log))
-	print("write found")
 	control_chars = ''.join(map(chr, list(range(0, 32)) + list(range(127, 160))))
 	control_char_re = re.compile('[%s]' % re.escape(control_chars))
+	print("write found")
 	log = ['Channel name,Orbital,Service ref,Picon name,Picon path\n']
 	for message in messages1:
 		clean_name = control_char_re.sub('', message[0])
@@ -217,7 +225,13 @@ def missingPicons():
 	for message in messages5:
 		log.append('%s=%s\n' % (message[0], message[1]))
 	log.sort(key=lambda x: x.split("=", 1)[0])
-	zf.writestr(outlog5, "".join(log))  # don't use logExt
+	zf.writestr(outlog5 + logExtPlain, "".join(log))  # don't use logExt
+
+	log = ['Channel name,Orbital,Service ref,Picon name\n']
+	for message in messages6:
+		log.append('"%s","%s","%s","%s"\n' % (control_char_re.sub('', message[0]), satname(message[1]), message[2], message[3]))
+
+	zf.writestr(outlog6 + logExt, "".join(log))
 
 	'''
 	print "Writing picons-missing log..."
